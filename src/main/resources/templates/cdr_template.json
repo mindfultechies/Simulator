@@ -1,0 +1,16 @@
+{
+  "id": "basic-cdr-v1",
+  "type": "cdr",
+  "rate": { "per_second": 5 },
+  "parallel": 3,
+  "batch_size": 2,
+  "duration": 10,
+  "fields": {
+    "callId": { "type": "uuid" },
+    "fromNumber": { "type": "phone" },
+    "toNumber": { "type": "phone" },
+    "startTime": { "type": "now" },
+    "duration": { "type": "random_int", "min": 5, "max": 3600 }
+  },
+  "output": { "topic": "events.cdr", "format": "json" }
+}
