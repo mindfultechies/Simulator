@@ -1,0 +1,48 @@
+graph TD
+    subgraph "Agent (Orchestrator)"
+        Agent[Agent] --> TemplateStore[(Template Store)]
+        Agent --> NodeRegistry[(Node Registry)]
+        Agent --> Monitor[Health Monitor]
+        Agent --> LoadBalancer[Load Balancer]
+    end
+
+    subgraph "Worker Node 1"
+        Worker1[Worker Process] --> ThreadPool1[Thread Pool<br/>Max Simulators]
+        ThreadPool1 --> Engine1a[Engine 1]
+        ThreadPool1 --> Engine1b[Engine 2]
+        ThreadPool1 --> Engine1c[Engine N]
+        Engine1a --> Registry1[DynamicSimulator<br/>Seeded Faker]
+        Engine1b --> Registry1
+        Engine1c --> Registry1
+        Registry1 --> Kafka1[Kafka Producer]
+    end
+
+    subgraph "Worker Node 2"
+        Worker2[Worker Process] --> ThreadPool2[Thread Pool<br/>Max Simulators]
+        ThreadPool2 --> Engine2a[Engine 1]
+        ThreadPool2 --> Engine2b[Engine 2]
+        ThreadPool2 --> Engine2c[Engine N]
+        Engine2a --> Registry2[DynamicSimulator<br/>Seeded Faker]
+        Engine2b --> Registry2
+        Engine2c --> Registry2
+        Registry2 --> Kafka2[Kafka Producer]
+    end
+
+    subgraph "Shared Infrastructure"
+        Kafka[Kafka Broker]
+        ConfigVolume[(Config Volume)]
+    end
+
+    Agent -->|Parallel Template<br/>Assignments| Worker1
+    Agent -->|Parallel Template<br/>Assignments| Worker2
+    Worker1 -->|Register & Status| Agent
+    Worker2 -->|Register & Status| Agent
+    Worker1 -.->|Graceful Shutdown| Agent
+    Worker2 -.->|Graceful Shutdown| Agent
+    Kafka1 -->|Unique Events| Kafka
+    Kafka2 -->|Unique Events| Kafka
+    TemplateStore --> ConfigVolume
+    NodeRegistry --> ConfigVolume
+
+    classDef parallelClass fill:#e1f5fe,stroke:#01579b
+    class ThreadPool1,ThreadPool2 parallelClass
